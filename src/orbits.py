@@ -27,8 +27,7 @@ import corner
 print("import MCMC")
 import emcee
 print("multiprocessing imports")
-from multiprocessing import Pool
-from multiprocessing import cpu_count
+from schwimmbad import MultiPool
 print("import time")
 import datetime
 print("import warn")
@@ -365,11 +364,9 @@ backend = emcee.backends.HDFBackend(filename)
 backend.reset(nwalkers, ndim) # uncomment this line to start the simulation from scratch
 
 
-with Pool() as pool:
+with MultiPool() as pool:
     sampler = emcee.EnsembleSampler(nwalkers, ndim, lnProb, pool=pool, backend=backend)
 
-    ncpu = cpu_count()
-    print("Running MCMC on {0} CPUs".format(ncpu))
     old_tau = np.inf
     for sample in sampler.sample(pos, iterations=n_max, progress=True):
         if sampler.iteration % 100:
@@ -383,7 +380,7 @@ with Pool() as pool:
             break
         old_tau = tau
 
-sampler.get_autocorr_time() #insert tau here if note autocorrelated (e.g. during testing)
+sampler.get_autocorr_time() #insert tau here if not autocorrelated (e.g. during testing)
 burnin = int(2 * np.max(tau))
 thin = int(0.5 * np.min(tau))
 samples = sampler.get_chain(discard=burnin, flat=True, thin=thin)
